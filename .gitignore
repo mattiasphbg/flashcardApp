@@ -35,6 +35,7 @@ publish/
 *.g.i.cs
 # Azure Functions specific
 local.settings.json
+appsettings.json
 
 # Visual Studio Code
 .vscode/
