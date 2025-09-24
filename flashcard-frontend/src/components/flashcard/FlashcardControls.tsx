@@ -7,6 +7,8 @@ interface FlashcardControlsProps {
   isFlipped: boolean;
   onFlip: () => void;
   onReset: () => void;
+  onRandom: () => void;
+  isLoading: boolean;
 }
 
 export default function FlashcardControls({

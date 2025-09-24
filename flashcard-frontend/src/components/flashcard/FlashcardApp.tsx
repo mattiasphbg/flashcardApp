@@ -1,84 +1,68 @@
 "use client";
 
-import { useState } from "react";
 import Flashcard from "./Flashcard";
 import FlashcardControls from "./FlashcardControls";
 import FlashcardNavigation from "./FlashcardNavigation";
-
-interface FlashcardData {
-  id: number;
-  question: string;
-  answer: string;
-}
-
-const flashcards: FlashcardData[] = [
-  {
-    id: 1,
-    question: "What is the capital of France?",
-    answer:
-      "Paris is the capital and most populous city of France, known for its art, fashion, gastronomy, and culture.",
-  },
-  {
-    id: 2,
-    question: "What is the largest planet in our solar system?",
-    answer:
-      "Jupiter is the largest planet in our solar system, with a mass more than twice that of all other planets combined.",
-  },
-  {
-    id: 3,
-    question: "Who wrote 'Romeo and Juliet'?",
-    answer:
-      "William Shakespeare wrote 'Romeo and Juliet' around 1594-1596. It's one of his most famous tragedies.",
-  },
-  {
-    id: 4,
-    question: "What is the chemical symbol for gold?",
-    answer:
-      "Au is the chemical symbol for gold, derived from the Latin word 'aurum' meaning gold.",
-  },
-  {
-    id: 5,
-    question: "In what year did World War II end?",
-    answer:
-      "World War II ended in 1945, with Germany surrendering in May and Japan surrendering in September.",
-  },
-];
+import { useFlashcards } from "@/hooks/useFlashcards";
 
 export default function FlashcardApp() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
+  const {
+    currentCard,
+    currentIndex,
+    isFlipped,
+    isLoading,
+    error,
+    flashcards,
+    flipCard,
+    resetCard,
+    nextCard,
+    previousCard,
+    goToCard,
+    fetchRandomFlashcard,
+  } = useFlashcards();
 
-  const currentCard = flashcards[currentIndex];
+  if (isLoading && flashcards.length === 0) {
+    return (
+      <div className="w-full max-w-2xl mx-auto space-y-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading flashcards...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
-  };
+  if (error && flashcards.length === 0) {
+    return (
+      <div className="w-full max-w-2xl mx-auto space-y-8">
+        <div className="text-center">
+          <p className="text-destructive">Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
-  const handleReset = () => {
-    setIsFlipped(false);
-  };
-
-  const handleNext = () => {
-    if (currentIndex < flashcards.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setIsFlipped(false);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      setIsFlipped(false);
-    }
-  };
-
-  const handleGoToCard = (index: number) => {
-    setCurrentIndex(index);
-    setIsFlipped(false);
-  };
+  if (!currentCard) {
+    return (
+      <div className="w-full max-w-2xl mx-auto space-y-8">
+        <div className="text-center">
+          <p className="text-muted-foreground">No flashcards available</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-8">
+      {/* Error Message */}
+      {error && (
+        <div className="text-center">
+          <p className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+            {error}
+          </p>
+        </div>
+      )}
+
       {/* Card Counter */}
       <div className="text-center">
         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary text-secondary-foreground">
@@ -87,22 +71,24 @@ export default function FlashcardApp() {
       </div>
 
       {/* Flashcard */}
-      <Flashcard card={currentCard} isFlipped={isFlipped} onFlip={handleFlip} />
+      <Flashcard card={currentCard} isFlipped={isFlipped} onFlip={flipCard} />
 
       {/* Action Buttons */}
       <FlashcardControls
         isFlipped={isFlipped}
-        onFlip={handleFlip}
-        onReset={handleReset}
+        onFlip={flipCard}
+        onReset={resetCard}
+        onRandom={fetchRandomFlashcard}
+        isLoading={isLoading}
       />
 
       {/* Navigation */}
       <FlashcardNavigation
         currentIndex={currentIndex}
         totalCards={flashcards.length}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onGoToCard={handleGoToCard}
+        onPrevious={previousCard}
+        onNext={nextCard}
+        onGoToCard={goToCard}
       />
     </div>
   );
