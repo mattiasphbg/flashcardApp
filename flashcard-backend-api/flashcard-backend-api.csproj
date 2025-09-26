@@ -31,9 +31,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\flashcard.Shared\flashcard.Shared.csproj" />
-		<None Update="appsettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
 		<None Update="host.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

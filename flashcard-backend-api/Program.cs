@@ -1,25 +1,51 @@
 using Microsoft.Extensions.Hosting;
-using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using flashcard_backend_api.Data;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using Microsoft.Extensions.Configuration;
-using System.IO;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
     .ConfigureAppConfiguration((hostContext, config) =>
     {
-        // Print out current directory and base directory
-        Console.WriteLine($"Current Directory: {Directory.GetCurrentDirectory()}");
-        Console.WriteLine($"Base Directory: {AppContext.BaseDirectory}");
+        config.AddJsonFile("local.settings.json", optional: true, reloadOnChange: true);
+        config.AddEnvironmentVariables();
+    })
+    .ConfigureServices((hostContext, services) =>
+    {
+        services.AddApplicationInsightsTelemetryWorkerService();
+        services.ConfigureFunctionsApplicationInsights();
 
-        var basePath = AppContext.BaseDirectory;
-        var appsettingsPath = Path.Combine(basePath, "appsettings.json");
+        var configuration = hostContext.Configuration;
 
-        // Check if file exists
-        Console.WriteLine($"appsettings.json exists: {File.Exists(appsettingsPath)}");
-        Console.WriteLine($"appsettings.json path: {appsettingsPath}");
 
-        config.SetBasePath(basePath)
-              .AddJsonFile(appsettingsPath, optional: true, reloadOnChange: true);
+        string connectionString = configuration.GetConnectionString("SqlDbConnection");
+
+
+
+
+        if (string.IsNullOrEmpty(connectionString))
+        {
+           
+
+            throw new InvalidOperationException("SqlDbConnection connection string is not set in local.settings.json or environment variables.");
+        }
+
+      
+
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlServer(connectionString,
+                sqlOptions =>
+                {
+                    // Removed EnableRetailDegradation (not a standard method)
+                    sqlOptions.CommandTimeout((int?)TimeSpan.FromSeconds(30).TotalSeconds);
+                }));
+
+        services.AddSingleton(new Random());
     })
     .Build();
 
