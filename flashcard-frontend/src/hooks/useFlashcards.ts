@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useFlashcardStore } from "@/stores/flashcardStore";
 
 const API_BASE_URL =
@@ -9,13 +9,7 @@ export const useFlashcards = () => {
     flashcards,
     currentIndex,
     isFlipped,
-    isLoading,
-    error,
-    setFlashcards,
-    setCurrentIndex,
     setIsFlipped,
-    setLoading,
-    setError,
     addFlashcard,
     resetCard,
     nextCard,
@@ -23,70 +17,51 @@ export const useFlashcards = () => {
     goToCard,
   } = useFlashcardStore();
 
-  const currentCard = flashcards[currentIndex];
-
-  // API functions
-  const fetchAllFlashcards = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const {
+    data: fetchedFlashcards = [],
+    isLoading,
+    error,
+    refetch: refetchFlashcards,
+  } = useQuery({
+    queryKey: ["flashcards"],
+    queryFn: async () => {
       const response = await fetch(`${API_BASE_URL}/flashcards`);
       if (!response.ok) {
         throw new Error("Failed to fetch flashcards");
       }
-      const data = await response.json();
-      setFlashcards(data);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to load flashcards";
-      setError(errorMessage);
-      // Fallback to local data
-      setFlashcards([
-        {
-          id: 1,
-          question: "What is the capital of France?",
-          answer:
-            "Paris is the capital and most populous city of France, known for its art, fashion, gastronomy, and culture.",
-        },
-        {
-          id: 2,
-          question: "What is the largest planet in our solar system?",
-          answer:
-            "Jupiter is the largest planet in our solar system, with a mass more than twice that of all other planets combined.",
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.json();
+    },
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
+  });
 
+  // Use the fetched data directly, or fall back to store data
+  const displayFlashcards =
+    fetchedFlashcards.length > 0 ? fetchedFlashcards : flashcards;
+
+  const currentCard = displayFlashcards[currentIndex];
+
+  // Keep your existing fetchRandomFlashcard function
   const fetchRandomFlashcard = async () => {
     try {
-      setLoading(true);
-      setError(null);
       const response = await fetch(`${API_BASE_URL}/flashcards/random`);
       if (!response.ok) {
         throw new Error("Failed to fetch random flashcard");
       }
       const randomCard = await response.json();
 
-      // Check if card already exists
-      const existingIndex = flashcards.findIndex(
-        (card) => card.id === randomCard.id
+      const existingIndex = displayFlashcards.findIndex(
+        (card: { id: string }) => card.id === randomCard.id
       );
 
       if (existingIndex !== -1) {
         goToCard(existingIndex);
       } else {
         addFlashcard(randomCard);
-        goToCard(flashcards.length);
+        goToCard(displayFlashcards.length);
       }
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to load random card";
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
+      console.error("Failed to load random card:", err);
     }
   };
 
@@ -94,29 +69,20 @@ export const useFlashcards = () => {
     setIsFlipped(!isFlipped);
   };
 
-  // Load flashcards on mount
-  useEffect(() => {
-    if (flashcards.length === 0) {
-      fetchAllFlashcards();
-    }
-  }, []);
-
   return {
-    // State
-    flashcards,
+    flashcards: displayFlashcards,
     currentCard,
     currentIndex,
     isFlipped,
     isLoading,
-    error,
+    error: error?.message || null,
 
-    // Actions
     flipCard,
     resetCard,
     nextCard,
     previousCard,
     goToCard,
     fetchRandomFlashcard,
-    fetchAllFlashcards,
+    fetchAllFlashcards: refetchFlashcards,
   };
 };

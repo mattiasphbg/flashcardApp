@@ -48,10 +48,7 @@ export const useFlashcardStore = create<FlashcardState>((set) => ({
 
   nextCard: () =>
     set((state) => {
-      const nextIndex = Math.min(
-        state.currentIndex + 1,
-        state.flashcards.length - 1
-      );
+      const nextIndex = state.currentIndex + 1;
       return {
         currentIndex: nextIndex,
         isFlipped: false,

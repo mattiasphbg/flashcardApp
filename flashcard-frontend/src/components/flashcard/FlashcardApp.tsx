@@ -21,6 +21,14 @@ export default function FlashcardApp() {
     fetchRandomFlashcard,
   } = useFlashcards();
 
+  console.log("Functions from hook:", {
+    nextCard: typeof nextCard,
+    previousCard: typeof previousCard,
+    goToCard: typeof goToCard,
+    currentIndex,
+    flashcardsLength: flashcards.length,
+  });
+
   if (isLoading && flashcards.length === 0) {
     return (
       <div className="w-full max-w-2xl mx-auto space-y-8">
@@ -41,7 +49,7 @@ export default function FlashcardApp() {
       </div>
     );
   }
-
+  console.log(currentCard);
   if (!currentCard) {
     return (
       <div className="w-full max-w-2xl mx-auto space-y-8">
@@ -62,7 +70,6 @@ export default function FlashcardApp() {
           </p>
         </div>
       )}
-
       {/* Card Counter */}
       <div className="text-center">
         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary text-secondary-foreground">
@@ -72,7 +79,6 @@ export default function FlashcardApp() {
 
       {/* Flashcard */}
       <Flashcard card={currentCard} isFlipped={isFlipped} onFlip={flipCard} />
-
       {/* Action Buttons */}
       <FlashcardControls
         isFlipped={isFlipped}
@@ -81,7 +87,6 @@ export default function FlashcardApp() {
         onRandom={fetchRandomFlashcard}
         isLoading={isLoading}
       />
-
       {/* Navigation */}
       <FlashcardNavigation
         currentIndex={currentIndex}

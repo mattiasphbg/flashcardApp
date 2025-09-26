@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 
 interface FlashcardData {
-  id: number;
-  question: string;
-  answer: string;
+  Id: number;
+  Question: string;
+  Answer: string;
 }
 
 interface FlashcardProps {
@@ -43,7 +43,7 @@ export default function Flashcard({ card, isFlipped, onFlip }: FlashcardProps) {
                 Question
               </div>
               <h2 className="text-2xl font-semibold text-card-foreground text-balance leading-relaxed">
-                {card.question}
+                {card.Question}
               </h2>
             </div>
           ) : (
@@ -52,7 +52,7 @@ export default function Flashcard({ card, isFlipped, onFlip }: FlashcardProps) {
                 Answer
               </div>
               <p className="text-xl text-card-foreground text-pretty leading-relaxed">
-                {card.answer}
+                {card.Answer}
               </p>
             </div>
           )}
