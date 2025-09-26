@@ -1,9 +1,16 @@
 {
   "profiles": {
-    "flashcard_backend_api": {
+    "flashcard_backend_api": { 
+      "commandName": "Project"
+    },
+    "AzureFunctions": { 
       "commandName": "Project",
-      "commandLineArgs": "--port 7196",
-      "launchBrowser": false
+      "commandLineArgs": "host start --port 7071", 
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "nativeDebugging": false
     }
   }
 }
